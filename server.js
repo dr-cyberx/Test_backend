@@ -1,22 +1,29 @@
 const express = require("express");
 const fs = require("fs");
+const morgan = require("morgan");
 
 const app = express();
+
+app.use(morgan("dev"));
 app.use(express.json());
+app.use((req, res, next) => {
+  req.requestedTime = new Date().toISOString();
+  next();
+});
 
 const tours = JSON.parse(fs.readFileSync(`${__dirname}/app-data/data.json`));
+const users = JSON.parse(fs.readFileSync(`${__dirname}/app-data/users.json`));
 
 const isHealthy = (req, res) => {
-  console.log(req.params);
   res.status(200).json({ message: "Hello world", status: 200 });
 };
 
 const getTours = (req, res) => {
+  console.log(req.requestedTime);
   res.status(200).json({ result: tours.length, data: tours, status: 200 });
 };
 
 const getTourByID = (req, res) => {
-  console.log(req.params);
   res.status(200).json({
     result: tours.filter((item) => item.id == req.params.id).length,
     data: tours.filter((item) => item.id == req.params.id),
@@ -72,7 +79,39 @@ const deleteTour = (req, res) => {
   });
 };
 
-app.get("/api/v1/ishealthy", isHealthy);
+const getAllUsers = (req, res, next) => {
+  res.status(200).json({
+    status: "success",
+    data: users,
+  });
+};
+
+const createNewUser = (req, res, next) => {
+  if (Object.keys(req.body).length <= 7) {
+    users.push(req.body);
+    fs.writeFile(
+      `${__dirname}/app-data/users.json`,
+      JSON.stringify(users),
+      (err) => {
+        res.status(201).json({
+          status: "success",
+          data: null,
+        });
+      }
+    );
+  }
+};
+const updateUser = (req, res, next) => {};
+const deleteUser = (req, res, next) => {};
+const getUser = (req, res, next) => {
+  const id = req.params.id;
+  const user = users.find((item) => item._id === id);
+  res.status(201).json({
+    status: "success",
+    data: user,
+  });
+};
+
 // app.get("/api/tours", getTours);
 // app.get("/api/tours/:id/:x?/:y?", getTourByID);
 // app.get("/api/v1/tours/:id", getTourByID);
@@ -80,9 +119,13 @@ app.get("/api/v1/ishealthy", isHealthy);
 // app.patch("/api/v1/tour/:id", updateTour);
 // app.delete("/api/v1/tour/:id", deleteTour);
 
-app.route("/api/vi/tours").get(getTours).post(createTour);
+app.route("/api/v1/users").get(getAllUsers).post(createNewUser);
+app.route("/api/v1/user/:id").get(getUser).patch(updateUser).delete(deleteUser);
+
+app.get("/api/v1/ishealthy", isHealthy);
+app.route("/api/v1/tours").get(getTours).post(createTour);
 app
-  .route("/api/v1/tours/:id")
+  .route("/api/v1/tour/:id")
   .get(getTourByID)
   .patch(updateTour)
   .delete(deleteTour);
