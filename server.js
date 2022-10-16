@@ -1,6 +1,8 @@
 const express = require("express");
 const fs = require("fs");
 const morgan = require("morgan");
+const tourRouter = require("./routes/tourRoutes");
+const userRouter = require("./routes/userRoutes");
 
 const app = express();
 
@@ -11,106 +13,17 @@ app.use((req, res, next) => {
   next();
 });
 
-const tours = JSON.parse(fs.readFileSync(`${__dirname}/app-data/data.json`));
-const users = JSON.parse(fs.readFileSync(`${__dirname}/app-data/users.json`));
+app.use("/api/v1/tour", tourRouter);
 
-const isHealthy = (req, res) => {
+app.use("/api/v1/users", userRouter);
+
+app.get("/api/v1/ishealthy", (req, res) => {
   res.status(200).json({ message: "Hello world", status: 200 });
-};
+});
 
-const getTours = (req, res) => {
-  console.log(req.requestedTime);
-  res.status(200).json({ result: tours.length, data: tours, status: 200 });
-};
-
-const getTourByID = (req, res) => {
-  res.status(200).json({
-    result: tours.filter((item) => item.id == req.params.id).length,
-    data: tours.filter((item) => item.id == req.params.id),
-    status: 200,
-  });
-};
-
-const createTour = (req, res) => {
-  const id = tours[tours.length - 1].id + 1;
-  const newTour = Object.assign({ id }, req.body);
-  tours.push(newTour);
-  fs.writeFile(
-    `${__dirname}/app-data/data.json`,
-    JSON.stringify(tours),
-    (err) => {
-      res.status(201).json({
-        status: "success",
-        data: {
-          tours: newTour,
-        },
-      });
-    }
-  );
-};
-
-const updateTour = (req, res) => {
-  if (req.params.id * 1 > tours.length) {
-    return res.status(404).json({
-      status: "fail",
-      message: "Invalid ID",
-    });
-  }
-
-  res.status(200).json({
-    status: "success",
-    data: {
-      tour: "updating data....",
-    },
-  });
-};
-
-const deleteTour = (req, res) => {
-  if (req.params.id * 1 > tours.length) {
-    return res.status(404).json({
-      status: "fail",
-      message: "Invalid ID",
-    });
-  }
-
-  res.status(204).json({
-    status: "success",
-    data: null,
-  });
-};
-
-const getAllUsers = (req, res, next) => {
-  res.status(200).json({
-    status: "success",
-    data: users,
-  });
-};
-
-const createNewUser = (req, res, next) => {
-  if (Object.keys(req.body).length <= 7) {
-    users.push(req.body);
-    fs.writeFile(
-      `${__dirname}/app-data/users.json`,
-      JSON.stringify(users),
-      (err) => {
-        res.status(201).json({
-          status: "success",
-          data: null,
-        });
-      }
-    );
-  }
-};
-const updateUser = (req, res, next) => {};
-const deleteUser = (req, res, next) => {};
-const getUser = (req, res, next) => {
-  const id = req.params.id;
-  const user = users.find((item) => item._id === id);
-  res.status(201).json({
-    status: "success",
-    data: user,
-  });
-};
+app.listen(4000, () => {
+  console.log("The server is up at http://localhost:4000");
+});
 
 // app.get("/api/tours", getTours);
 // app.get("/api/tours/:id/:x?/:y?", getTourByID);
@@ -118,18 +31,3 @@ const getUser = (req, res, next) => {
 // app.post("/api/tours", createTour);
 // app.patch("/api/v1/tour/:id", updateTour);
 // app.delete("/api/v1/tour/:id", deleteTour);
-
-app.route("/api/v1/users").get(getAllUsers).post(createNewUser);
-app.route("/api/v1/user/:id").get(getUser).patch(updateUser).delete(deleteUser);
-
-app.get("/api/v1/ishealthy", isHealthy);
-app.route("/api/v1/tours").get(getTours).post(createTour);
-app
-  .route("/api/v1/tour/:id")
-  .get(getTourByID)
-  .patch(updateTour)
-  .delete(deleteTour);
-
-app.listen(4000, () => {
-  console.log("The server is up at http://localhost:4000");
-});
