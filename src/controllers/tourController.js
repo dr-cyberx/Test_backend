@@ -4,6 +4,27 @@ const tours = JSON.parse(
   fs.readFileSync(`${__dirname}/../../app-data/tours.json`)
 );
 
+exports.checkTourBody = (req, res, next) => {
+  if (!req.body.name || !req.body.price) {
+    return res.status(200).json({
+      message: "Missing Name or Price",
+      data: null,
+    });
+  }
+  next();
+};
+
+exports.checkID = (req, res, next, value) => {
+  console.log("value of param is -> ", value);
+  if (req.params.id * 1 > tours.length) {
+    return res.status(404).json({
+      status: "fail",
+      message: "Invalid ID",
+    });
+  }
+  next();
+};
+
 exports.getTours = (req, res) => {
   console.log(req.requestedTime);
   res.status(200).json({ result: tours.length, data: tours, status: 200 });

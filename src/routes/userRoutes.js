@@ -9,6 +9,11 @@ const {
 
 const userRouter = express.Router();
 
+userRouter.param("id", (req, res, next, value) => {
+  console.log("value of param is -> ", value);
+  next();
+});
+
 userRouter.route("/").get(getAllUsers).post(createNewUser);
 userRouter.route("/:id").get(getUser).patch(updateUser).delete(deleteUser);
 
