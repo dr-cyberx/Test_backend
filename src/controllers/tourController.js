@@ -1,13 +1,15 @@
-const express = require("express");
+const fs = require("fs");
 
-const tours = JSON.parse(fs.readFileSync(`${__dirname}/app-data/data.json`));
+const tours = JSON.parse(
+  fs.readFileSync(`${__dirname}/../../app-data/tours.json`)
+);
 
-const getTours = (req, res) => {
+exports.getTours = (req, res) => {
   console.log(req.requestedTime);
   res.status(200).json({ result: tours.length, data: tours, status: 200 });
 };
 
-const getTourByID = (req, res) => {
+exports.getTourByID = (req, res) => {
   res.status(200).json({
     result: tours.filter((item) => item.id == req.params.id).length,
     data: tours.filter((item) => item.id == req.params.id),
@@ -15,7 +17,7 @@ const getTourByID = (req, res) => {
   });
 };
 
-const createTour = (req, res) => {
+exports.createTour = (req, res) => {
   const id = tours[tours.length - 1].id + 1;
   const newTour = Object.assign({ id }, req.body);
   tours.push(newTour);
@@ -33,7 +35,7 @@ const createTour = (req, res) => {
   );
 };
 
-const updateTour = (req, res) => {
+exports.updateTour = (req, res) => {
   if (req.params.id * 1 > tours.length) {
     return res.status(404).json({
       status: "fail",
@@ -49,7 +51,7 @@ const updateTour = (req, res) => {
   });
 };
 
-const deleteTour = (req, res) => {
+exports.deleteTour = (req, res) => {
   if (req.params.id * 1 > tours.length) {
     return res.status(404).json({
       status: "fail",
@@ -62,10 +64,3 @@ const deleteTour = (req, res) => {
     data: null,
   });
 };
-
-const tourRouter = express.Router();
-
-tourRouter.route("/").get(getTours).post(createTour);
-tourRouter.route("/:id").get(getTourByID).patch(updateTour).delete(deleteTour);
-
-module.exports = tourRouter;
