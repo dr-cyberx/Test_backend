@@ -1,4 +1,4 @@
-const fs = require("fs");
+const fs = require('fs');
 
 const users = JSON.parse(
   fs.readFileSync(`${__dirname}/../../app-data/users.json`)
@@ -6,7 +6,7 @@ const users = JSON.parse(
 
 exports.getAllUsers = (req, res, next) => {
   res.status(200).json({
-    status: "success",
+    status: 'success',
     data: users,
   });
 };
@@ -17,9 +17,9 @@ exports.createNewUser = (req, res, next) => {
     fs.writeFile(
       `${__dirname}/app-data/users.json`,
       JSON.stringify(users),
-      (err) => {
+      () => {
         res.status(201).json({
-          status: "success",
+          status: 'success',
           data: null,
         });
       }
@@ -29,10 +29,10 @@ exports.createNewUser = (req, res, next) => {
 exports.updateUser = (req, res, next) => {};
 exports.deleteUser = (req, res, next) => {};
 exports.getUser = (req, res, next) => {
-  const id = req.params.id;
+  const { id } = req.params;
   const user = users.find((item) => item._id === id);
   res.status(201).json({
-    status: "success",
+    status: 'success',
     data: user,
   });
 };
